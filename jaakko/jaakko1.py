@@ -6,7 +6,7 @@ from ij.plugin.filter import ThresholdToSelection
 from ij.plugin.frame import RoiManager
 from ij.gui import WaitForUserDialog as Wait
 
-from skeleton_analysis import *
+#from skeleton_analysis import *
 
 import glob
 import sys
@@ -15,28 +15,6 @@ from java.lang import Double
 from java.awt import Color
 
 inputDir = "/input/LMU-active2/Harri/Data/Jaakko/sample 0001.tif_Files/"
-
-tmp = glob.glob(inputDir + "fibrone*")
-fibronectin = tmp[0]
-tmp = glob.glob(inputDir + "nucleus*")
-nucleus = tmp[0]
-tmp = glob.glob(inputDir + "actin*")
-actin = tmp[0]
-
-# original images
-imp_fn_orig = IJ.openImage(fibronectin)
-imp_nuc_orig = IJ.openImage(nucleus)
-
-# work copies
-imp_fn = imp_fn_orig.duplicate()
-imp_nuc = imp_nuc_orig.duplicate()
-
-IJ.run(imp_fn,"Set Scale...", "distance=1 known=1 pixel=1 unit=pixels")
-IJ.run(imp_fn,"Gaussian Blur...","sigma=5")
-IJ.run(imp_fn,"Make Binary","")
-IJ.run(imp_nuc,"Set Scale...", "distance=1 known=1 pixel=1 unit=pixels")
-IJ.run(imp_nuc,"Gaussian Blur...","sigma=5")
-IJ.run(imp_nuc,"Make Binary","")
 
 def getParticleCenters(imp):
     # Create a table to store the results
@@ -61,33 +39,59 @@ def getParticleCenters(imp):
 
     return (centroids_x,centroids_y, coms_x, coms_y)
 
-# centroid of fibronectin anchor
-centers = getParticleCenters(imp_fn)
-cxfn = int(round(centers[0][0]))
-cyfn = int(round(centers[1][0]))
-fn_centroid_roi = PointRoi(cxfn,cyfn)
-fn_centroid_roi.setDefaultMarkerSize("Large")
-fn_centroid_roi.setStrokeColor(Color.CYAN)
+def processOneImage(inputDir):
+    tmp = glob.glob(inputDir + "fibrone*")
+    fibronectin = tmp[0]
+    tmp = glob.glob(inputDir + "nucleus*")
+    nucleus = tmp[0]
+    tmp = glob.glob(inputDir + "actin*")
+    actin = tmp[0]
 
-# center of mass of nucleus 
-centers = getParticleCenters(imp_nuc)
-cxnuc = int(round(centers[2][0]))
-cynuc = int(round(centers[3][0]))
-nuc_com_roi = PointRoi(cxnuc,cynuc)
-nuc_com_roi.setDefaultMarkerSize("Large")
+    # original images
+    imp_fn_orig = IJ.openImage(fibronectin)
+    imp_nuc_orig = IJ.openImage(nucleus)
 
-# create composite
-print "creating composite"
-comp = ImagePlus("composite",imp_nuc_orig.getProcessor().convertToColorProcessor())
-comp.getProcessor().setChannel(2,imp_fn_orig.getProcessor())
-comp.show()
-comp.getProcessor().drawRoi(fn_centroid_roi)
-comp.getProcessor().drawRoi(nuc_com_roi)
-comp.repaintWindow()
-IJ.saveAsTiff(comp,"/output/" + "comp_jaakko1.tif")
+    # work copies
+    imp_fn = imp_fn_orig.duplicate()
+    imp_nuc = imp_nuc_orig.duplicate()
 
-IJ.run(imp_fn,"Skeletonize","")
-#wait = Wait("msg!")
-#wait.show()
+    IJ.run(imp_fn,"Set Scale...", "distance=1 known=1 pixel=1 unit=pixels")
+    IJ.run(imp_fn,"Gaussian Blur...","sigma=5")
+    IJ.run(imp_fn,"Make Binary","")
+    IJ.run(imp_nuc,"Set Scale...", "distance=1 known=1 pixel=1 unit=pixels")
+    IJ.run(imp_nuc,"Gaussian Blur...","sigma=5")
+    IJ.run(imp_nuc,"Make Binary","")
+
+    
+    # centroid of fibronectin anchor
+    centers = getParticleCenters(imp_fn)
+    cxfn = int(round(centers[0][0]))
+    cyfn = int(round(centers[1][0]))
+    fn_centroid_roi = PointRoi(cxfn,cyfn)
+    fn_centroid_roi.setDefaultMarkerSize("Large")
+    fn_centroid_roi.setStrokeColor(Color.CYAN)
+
+    # center of mass of nucleus 
+    centers = getParticleCenters(imp_nuc)
+    cxnuc = int(round(centers[2][0]))
+    cynuc = int(round(centers[3][0]))
+    nuc_com_roi = PointRoi(cxnuc,cynuc)
+    nuc_com_roi.setDefaultMarkerSize("Large")
+
+    # create composite
+    print "creating composite"
+    comp = ImagePlus("composite",imp_nuc_orig.getProcessor().convertToColorProcessor())
+    comp.getProcessor().setChannel(2,imp_fn_orig.getProcessor())
+    comp.show()
+    comp.getProcessor().drawRoi(fn_centroid_roi)
+    comp.getProcessor().drawRoi(nuc_com_roi)
+    comp.repaintWindow()
+    IJ.saveAsTiff(comp,"/output/" + "comp_jaakko1.tif")
+
+    IJ.run(imp_fn,"Skeletonize","")
+    IJ.run(imp_fn, "Analyze Skeleton (2D/3D)","show")
+    #wait = Wait("msg!")
+    #wait.show()
 
 
+processOneImage(inputDir)
