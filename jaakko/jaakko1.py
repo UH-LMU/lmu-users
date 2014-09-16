@@ -16,6 +16,8 @@ import sys
 from java.lang import Double
 from java.awt import Color
 
+from moments import readMoments
+
 inputDir = "/input/LMU-active2/Harri/Data/Jaakko/sample 0001.tif_Files"
 INPUT = "/input/LMU-active2/Harri/Data/Jaakko"
 OUTPUT = "/output"
@@ -42,6 +44,9 @@ def getParticleCenters(imp):
     coms_y = rt.getColumn(rt.Y_CENTER_OF_MASS)
 
     return (centroids_x,centroids_y, coms_x, coms_y)
+
+def printMoments(imageFilename, logFilename):
+    os.system("./printMoments.sh '%s' '%s'" % (imageFilename, logFilename))
 
 def getGraphLength(graph):
     length = 0
@@ -77,7 +82,13 @@ def processOneImage(inputDir):
     IJ.run(imp_nuc,"Gaussian Blur...","sigma=5")
     IJ.run(imp_nuc,"Make Binary","")
 
-    
+    # get moments of the fibronectin image
+    moments_file = os.path.join(OUTPUT, sample + " moments.txt")
+    printMoments(fibronectin, moments_file)
+    moments = readMoments(moments_file)
+    print moments.m00
+    sys.exit()
+
     # centroid of fibronectin anchor
     centers = getParticleCenters(imp_fn)
     cxfn = int(round(centers[0][0]))
@@ -154,4 +165,4 @@ samples = glob.glob(os.path.join(INPUT,"sample*"))
 for s in samples:
     print s
     processOneImage(s)
-#processOneImage(inputDir)
+    sys.exit()
