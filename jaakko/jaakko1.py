@@ -10,12 +10,15 @@ from skeleton_analysis import AnalyzeSkeleton_,Graph,Edge,Vertex
 
 import glob
 import math
+import os
 import sys
 
 from java.lang import Double
 from java.awt import Color
 
-inputDir = "/input/LMU-active2/Harri/Data/Jaakko/sample 0001.tif_Files/"
+inputDir = "/input/LMU-active2/Harri/Data/Jaakko/sample 0001.tif_Files"
+INPUT = "/input/LMU-active2/Harri/Data/Jaakko"
+OUTPUT = "/output"
 
 def getParticleCenters(imp):
     # Create a table to store the results
@@ -24,7 +27,7 @@ def getParticleCenters(imp):
             + PA.INCLUDE_HOLES \
             + PA.EXCLUDE_EDGE_PARTICLES
     measurements = PA.CENTROID + PA.CENTER_OF_MASS
-    MINSIZE = 0
+    MINSIZE = 1000
     MAXSIZE = Double.POSITIVE_INFINITY
     pa = PA(paOpts,measurements, rt, MINSIZE, MAXSIZE)
     pa.setHideOutputImage(True)
@@ -40,13 +43,24 @@ def getParticleCenters(imp):
 
     return (centroids_x,centroids_y, coms_x, coms_y)
 
+def getGraphLength(graph):
+    length = 0
+    for g in graph.getEdges():
+        length = length + g.getLength()
+
+    return length
+
 def processOneImage(inputDir):
-    tmp = glob.glob(inputDir + "fibrone*")
+    tmp = glob.glob(os.path.join(inputDir, "fibrone*"))
     fibronectin = tmp[0]
-    tmp = glob.glob(inputDir + "nucleus*")
+    tmp = glob.glob(os.path.join(inputDir, "nucleus*"))
     nucleus = tmp[0]
-    tmp = glob.glob(inputDir + "actin*")
+    tmp = glob.glob(os.path.join(inputDir, "actin*"))
     actin = tmp[0]
+    
+    # read sample name
+    head,tail = os.path.split(inputDir)
+    sample = tail.replace(".tif_Files","")
 
     # original images
     imp_fn_orig = IJ.openImage(fibronectin)
@@ -87,6 +101,8 @@ def processOneImage(inputDir):
     graph = skelResult.getGraph()
     print len(graph)
     print skelResult.getNumOfTrees()
+    # find the longest graph
+    graph = sorted(graph, key=lambda g: getGraphLength(g), reverse=True)
     graph = graph[0]
     edges = graph.getEdges()
     # find longest edge, the main axis of the anchor
@@ -113,12 +129,13 @@ def processOneImage(inputDir):
     anchor_roi = anchor_roi.addPoint(x3,y3)
     anchor_roi = anchor_roi.addPoint(x4,y4)
     # calculate angles
-    a1 = math.atan(float(y2-y1)/float(x2-x1))
-    a2 = math.atan(float(x4-x3)/float(y3-y4))
-    print x1,y1,x2,y2,x3,y3,x4,y4,a1,a2
+    a1 = math.atan(abs(float(y2-y1)/float(x2-x1))) / math.pi * 360
+    a2 = math.atan(abs(float(x4-x3)/float(y4-y3))) / math.pi * 360
+    amean = float((a1+a2)/2)
+    dx = cxfn-cxnuc
+    print sample,cxfn,cyfn,cxnuc,cynuc,dx,math.cos(amean)*dx,x1,y1,x2,y2,x3,y3,x4,y4,a1,a2
 
     # create composite
-    print "creating composite"
     comp = ImagePlus("composite",imp_nuc_orig.getProcessor().convertToColorProcessor())
     comp.getProcessor().setChannel(2,imp_fn_orig.getProcessor())
     comp.getProcessor().setChannel(3,imp_fn.getProcessor())
@@ -127,11 +144,14 @@ def processOneImage(inputDir):
     comp.getProcessor().drawRoi(nuc_com_roi)
     comp.getProcessor().drawRoi(anchor_roi)
     comp.repaintWindow()
-    IJ.saveAsTiff(comp,"/output/" + "comp_jaakko1.tif")
+    IJ.saveAsTiff(comp, os.path.join(OUTPUT,sample + ".tif"))
 
     #IJ.run(imp_fn, "Analyze Skeleton (2D/3D)","show")
     #wait = Wait("msg!")
     #wait.show()
 
-
-processOneImage(inputDir)
+samples = glob.glob(os.path.join(INPUT,"sample*"))
+for s in samples:
+    print s
+    processOneImage(s)
+#processOneImage(inputDir)
