@@ -6,9 +6,10 @@ from ij.plugin.filter import ThresholdToSelection
 from ij.plugin.frame import RoiManager
 from ij.gui import WaitForUserDialog as Wait
 
-#from skeleton_analysis import *
+from skeleton_analysis import AnalyzeSkeleton_,Graph,Edge,Vertex 
 
 import glob
+import math
 import sys
 
 from java.lang import Double
@@ -78,18 +79,57 @@ def processOneImage(inputDir):
     nuc_com_roi = PointRoi(cxnuc,cynuc)
     nuc_com_roi.setDefaultMarkerSize("Large")
 
+    # skeletonize fibronectin anchor to find its orientation
+    IJ.run(imp_fn,"Skeletonize","")
+    skel = AnalyzeSkeleton_()
+    skel.setup("",imp_fn)
+    skelResult = skel.run(skel.NONE, False, True, None, True, True)
+    graph = skelResult.getGraph()
+    print len(graph)
+    print skelResult.getNumOfTrees()
+    graph = graph[0]
+    edges = graph.getEdges()
+    # find longest edge, the main axis of the anchor
+    edges = sorted(edges, key=lambda edge: edge.getLength(), reverse=True)
+    #for e in edges:
+    #    print e.getLength()
+    v1long = edges[0].getV1()
+    v2long = edges[0].getV2()
+    x1 = v1long.getPoints()[0].x
+    y1 = v1long.getPoints()[0].y
+    x2 = v2long.getPoints()[0].x
+    y2 = v2long.getPoints()[0].y
+    anchor_roi = PointRoi(x1,y1)
+    anchor_roi = anchor_roi.addPoint(x2,y2)
+    # find top and bottom vertices of the graph
+    vertices = graph.getVertices()
+    vertices = sorted(vertices, key=lambda vertex: vertex.getPoints()[0].y)
+    v1short = vertices[len(vertices)-1]
+    v2short = vertices[0]
+    x3 = v1short.getPoints()[0].x
+    y3 = v1short.getPoints()[0].y
+    x4 = v2short.getPoints()[0].x
+    y4 = v2short.getPoints()[0].y
+    anchor_roi = anchor_roi.addPoint(x3,y3)
+    anchor_roi = anchor_roi.addPoint(x4,y4)
+    # calculate angles
+    a1 = math.atan(float(y2-y1)/float(x2-x1))
+    a2 = math.atan(float(x4-x3)/float(y3-y4))
+    print x1,y1,x2,y2,x3,y3,x4,y4,a1,a2
+
     # create composite
     print "creating composite"
     comp = ImagePlus("composite",imp_nuc_orig.getProcessor().convertToColorProcessor())
     comp.getProcessor().setChannel(2,imp_fn_orig.getProcessor())
+    comp.getProcessor().setChannel(3,imp_fn.getProcessor())
     comp.show()
     comp.getProcessor().drawRoi(fn_centroid_roi)
     comp.getProcessor().drawRoi(nuc_com_roi)
+    comp.getProcessor().drawRoi(anchor_roi)
     comp.repaintWindow()
     IJ.saveAsTiff(comp,"/output/" + "comp_jaakko1.tif")
 
-    IJ.run(imp_fn,"Skeletonize","")
-    IJ.run(imp_fn, "Analyze Skeleton (2D/3D)","show")
+    #IJ.run(imp_fn, "Analyze Skeleton (2D/3D)","show")
     #wait = Wait("msg!")
     #wait.show()
 
