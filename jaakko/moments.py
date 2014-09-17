@@ -1,3 +1,4 @@
+#!/usr/bin/env python 
 import re
 
 class Moments:
@@ -11,6 +12,12 @@ class Moments:
     m20 = None
     m21 = None
     m22 = None
+
+def printMoments(inputFile):
+    from ij import IJ
+    imp = IJ.openImage(inputFile)
+    IJ.run(imp,"Image Moments", "order=3")
+
 
 def readMoments(filename):
     f = open(filename)
@@ -58,6 +65,23 @@ def orientation(m):
     theta = math.atan(2*up11 / (up20 - up02))
     return 360 * theta / math.pi
 
-moments = readMoments("/output/sample 0001moments.txt")
-print orientation(moments)
+
+from optparse import OptionParser
+if __name__=='__main__':
+    usage ="""%prog [options] input_file
+    Convert MatrixScreener data to stacks, one multicolor stack per field.
+    Run '%prog -h' for options.
+    """
+    parser = OptionParser(usage=usage)
+    parser.add_option('-r', '--read', action="store_true", default=False, help="")
+    options, args = parser.parse_args()
+
+    inputFile = args[0]
+    if options.read:
+        m = readMoments(inputFile)
+        print orientation(m)
+
+    else:
+        printMoments(inputFile)
+
 
