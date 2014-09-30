@@ -351,7 +351,7 @@ SaveImages:[module_num:19|svn_version:\'Unknown\'|variable_revision_number:11|sh
     Append a suffix to the image file name?:Yes
     Text to append to the image name:_spots
     Saved file format:tif
-    Output file location:Elsewhere...\x7C/output/images
+    Output file location:Elsewhere...\x7C/output/GFP/images
     Image bit depth:8
     Overwrite existing files without warning?:Yes
     When to save:Every cycle
