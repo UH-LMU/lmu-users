@@ -30,13 +30,11 @@ def readMoments(filename):
         if re.search(".tif", l) or l == "":
             continue
 
-        #param, value, unit = l.split()
         param, value, unit = re.split(r'\t+', l)
-        print "%s # %s # %s" % (param, value, unit)
+        #print "%s # %s # %s" % (param, value, unit)
 
         if param == "m[0][0]": 
             m.m00 = float(value)
-            print m.m00
         elif param == "m[0][1]":
             m.m01 = float(value)
         elif param == "m[0][2]":
@@ -62,7 +60,7 @@ def orientation(m):
     up02 = m.m02 / m.m00
     up11 = m.m11 / m.m00
 
-    theta = math.atan(2*up11 / (up20 - up02))
+    theta = math.atan(2*up11 / (up20 - up02)) / 2
     return 360 * theta / math.pi
 
 
