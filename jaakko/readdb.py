@@ -29,6 +29,7 @@ if __name__ == '__main__':
     
     # data columns of interest
     columns = [image.ImageNumber,\
+            image.Image_PathName_overlay, \
             image.Image_FileName_overlay, \
             nucleus.nucleus_AreaShape_Center_X,\
             nucleus.nucleus_AreaShape_Center_Y, \
@@ -43,5 +44,5 @@ if __name__ == '__main__':
 
     results = query.all()
     for r in results:
-        print "%d,'%s',%f,%f,%f,%f,%f" % tuple(r)
+        print "%d,'%s','%s',%f,%f,%f,%f,%f" % tuple(r)
 
