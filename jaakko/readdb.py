@@ -28,14 +28,6 @@ if __name__ == '__main__':
     anchor = Base.classes.MyExpt_Per_anchor
     
     # data columns of interest
-    columnsImage = [#image.ImageNumber,\
-            image.Image_FileName_overlay]
-    columnsNucleus = [nucleus.nucleus_AreaShape_Center_X,\
-            nucleus.nucleus_AreaShape_Center_Y]
-    columnsAnchor = [anchor.anchor_AreaShape_Center_X,\
-            anchor.anchor_AreaShape_Center_Y, \
-            anchor.anchor_AreaShape_Orientation]
-
     columns = [image.ImageNumber,\
             image.Image_FileName_overlay, \
             nucleus.nucleus_AreaShape_Center_X,\
