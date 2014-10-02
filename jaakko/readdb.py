@@ -43,6 +43,9 @@ if __name__ == '__main__':
             .join(anchor,image.ImageNumber==anchor.ImageNumber)
 
     results = query.all()
+
+    avg = session.query(func.avg(columns[-1]).label('average')).all()[0][0]
+
     for r in results:
-        print "%d,'%s','%s',%f,%f,%f,%f,%f" % tuple(r)
+        print "%d,'%s','%s',%d,%d,%d,%d,%f,%f" % (tuple(r) + (avg,))
 

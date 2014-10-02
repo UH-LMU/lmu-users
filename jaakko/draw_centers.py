@@ -14,15 +14,20 @@ def draw_centers(data):
     pathname = data[1]
     filename = data[2]
 
-    nx = int(round(float(data[3])))
-    ny = int(round(float(data[4])))
-    ax = int(round(float(data[5])))
-    ay = int(round(float(data[6])))
+    nx = int(data[3])
+    ny = int(data[4])
+    ax = int(data[5])
+    ay = int(data[6])
     
     orientation = 2*math.pi * float(data[7]) / 360.0
     line_dy = int(round(math.atan(orientation) * LINE_DX))
     ax2 = ax - LINE_DX
     ay2 = ay - line_dy
+
+    orientation_avg = 2*math.pi * float(data[8]) / 360.0
+    line_dy = int(round(math.atan(orientation_avg) * LINE_DX))
+    ax3 = ax - LINE_DX
+    ay3 = ay - line_dy
 
     imp = IJ.openImage(os.path.join(pathname,filename))
 
@@ -37,6 +42,9 @@ def draw_centers(data):
 
     imp.setColor(Color.WHITE)
     imp.getProcessor().drawLine(ax,ay,ax2,ay2)
+    imp.setColor(Color.RED)
+    imp.getProcessor().drawLine(ax,ay,ax3,ay3)
+
 
     IJ.saveAsTiff(imp,os.path.join(pathname,filename))
 
