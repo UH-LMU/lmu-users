@@ -52,8 +52,9 @@ if __name__ == '__main__':
         avg = session.query(func.avg(anchor.anchor_AreaShape_Orientation).label('average')) \
                 .join(image, image.ImageNumber==anchor.ImageNumber) \
                 .filter(image.Image_Metadata_Plate==p[0]) \
+                .filter(image.Image_Metadata_QCFlag_multiple_anchors==0) \
                 .first()
-        print p[0], avg[0]
+        #print p[0], avg[0]
         avgs[p[0]] = avg[0]
 
 

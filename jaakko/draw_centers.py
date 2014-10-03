@@ -8,23 +8,24 @@ import math
 import os
 import sys
 
-LINE_DX = 300
+LINE_DX = 400
 
 def draw_centers(data):
     pathname = data[1]
     filename = data[2]
+    platename = data[3]
 
-    nx = int(data[3])
-    ny = int(data[4])
-    ax = int(data[5])
-    ay = int(data[6])
+    nx = int(data[4])
+    ny = int(data[5])
+    ax = int(data[6])
+    ay = int(data[7])
     
-    orientation = 2*math.pi * float(data[7]) / 360.0
+    orientation = 2*math.pi * float(data[8]) / 360.0
     line_dy = int(round(math.atan(orientation) * LINE_DX))
     ax2 = ax - LINE_DX
     ay2 = ay - line_dy
 
-    orientation_avg = 2*math.pi * float(data[8]) / 360.0
+    orientation_avg = 2*math.pi * float(data[9]) / 360.0
     line_dy = int(round(math.atan(orientation_avg) * LINE_DX))
     ax3 = ax - LINE_DX
     ay3 = ay - line_dy
@@ -40,9 +41,9 @@ def draw_centers(data):
     imp.getProcessor().drawRoi(roi_nucleus)
     imp.getProcessor().drawRoi(roi_anchor)
 
-    imp.setColor(Color.WHITE)
-    imp.getProcessor().drawLine(ax,ay,ax2,ay2)
     imp.setColor(Color.RED)
+    imp.getProcessor().drawLine(ax,ay,ax2,ay2)
+    imp.setColor(Color.WHITE)
     imp.getProcessor().drawLine(ax,ay,ax3,ay3)
 
 
