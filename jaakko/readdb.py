@@ -31,6 +31,7 @@ if __name__ == '__main__':
     columns = [image.ImageNumber,\
             image.Image_PathName_overlay, \
             image.Image_FileName_overlay, \
+            image.Image_Metadata_Plate, \
             nucleus.nucleus_AreaShape_Center_X,\
             nucleus.nucleus_AreaShape_Center_Y, \
             anchor.anchor_AreaShape_Center_X,\
@@ -44,8 +45,18 @@ if __name__ == '__main__':
 
     results = query.all()
 
-    avg = session.query(func.avg(columns[-1]).label('average')).all()[0][0]
+    # find unique plates and average orientation per plate
+    plates = session.query(image.Image_Metadata_Plate).distinct()
+    avgs = {}
+    for p in plates:
+        avg = session.query(func.avg(anchor.anchor_AreaShape_Orientation).label('average')) \
+                .join(image, image.ImageNumber==anchor.ImageNumber) \
+                .filter(image.Image_Metadata_Plate==p[0]) \
+                .first()
+        print p[0], avg[0]
+        avgs[p[0]] = avg[0]
+
 
     for r in results:
-        print "%d,'%s','%s',%d,%d,%d,%d,%f,%f" % (tuple(r) + (avg,))
+        print "%d,'%s','%s','%s',%d,%d,%d,%d,%f,%f" % (tuple(r) + (avgs[r[3]],))
 
