@@ -72,7 +72,8 @@ if __name__ == '__main__':
             .join(nucleus,image.ImageNumber==nucleus.ImageNumber) \
             .join(anchor,image.ImageNumber==anchor.ImageNumber) \
             .filter(image.Image_Metadata_QCFlag_multiple_anchors==0) \
-            .filter(image.Image_Metadata_QCFlag_no_nucleus==0)
+            .filter(image.Image_Metadata_QCFlag_no_nucleus==0) \
+            .order_by(image.Image_PathName_overlay.asc(),image.Image_FileName_overlay.asc())
 
     for r in query.all():
         # make a tuple of results
