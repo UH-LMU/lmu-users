@@ -15,6 +15,7 @@ def draw_centers(data):
     filename = data[2]
     platename = data[3]
 
+    print data[4]
     nx = int(data[4])
     ny = int(data[5])
     nx_com = int(data[6])
@@ -37,7 +38,7 @@ def draw_centers(data):
     roi_nucleus = PointRoi(nx,ny)
     roi_nucleus.setDefaultMarkerSize("Large")
     roi_nucleus.setStrokeColor(Color.CYAN)
-    roi_nucleus_com = PointRoi(nx,ny)
+    roi_nucleus_com = PointRoi(nx_com,ny_com)
     roi_nucleus_com.setDefaultMarkerSize("Large")
     roi_nucleus_com.setStrokeColor(Color.GREEN)
     roi_anchor = PointRoi(ax,ay)
@@ -58,6 +59,10 @@ def draw_centers(data):
 f = open(sys.argv[1], 'rb') 
 try:
     reader = csv.reader(f,quotechar="'")
+
+    # skip header row
+    reader.next()
+
     for row in reader:
         draw_centers(row)
         #sys.exit()
