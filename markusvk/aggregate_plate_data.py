@@ -98,6 +98,8 @@ if __name__ == '__main__':
                     nuclei.Nuclei_Children_SpotsLanaBright_Count,\
                     nuclei.Nuclei_Children_SpotsLanaDim_Count]
 
+    columnsNucleiGfp = [nucleiGfpPos.GFPpositive_Intensity_MeanIntensity_MTA,]
+
     # find unique plate names
     plates = session.query(distinct(plate)).all()
     #print plates
@@ -114,7 +116,7 @@ if __name__ == '__main__':
         for w in wells:
             w = w[0]
 
-            # get measurements for all nuclei 
+            # query nuclei
             queryNuclei = session.query(*columnsNuclei).join(image,nuclei.ImageNumber==image.ImageNumber) \
                           .filter(plate==p,well==w)
 
@@ -125,6 +127,20 @@ if __name__ == '__main__':
             wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (number_of_GFP_pos)",s[0])
             wellplate.addWellMeasurement(w, str(columnsNuclei[1]) + " (number_of_GFP_neg)",s[1])
             wellplate.addWellMeasurement(w, "number_of_nuclei",len(results))
+
+
+            # query GFP positive nuclei
+            queryNuclei = session.query(*columnsNucleiGfp).join(image,nucleiGfpPos.ImageNumber==image.ImageNumber) \
+                          .filter(plate==p,well==w)
+            results = queryNuclei.all()
+            
+            # if no results, there are no positive cells
+            if len(results) == 0:
+                m = [0,]
+            else:
+                m = means(results)
+            
+            wellplate.addWellMeasurement(w, str(columnsNucleiGfp[0]) + " (average MTA intensity per cell)",m[0])
 
         wellplate.printout()
         #sys.exit()
