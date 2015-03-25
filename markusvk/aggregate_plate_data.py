@@ -10,6 +10,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.ext.automap import automap_base
 
 db = "/input/LMU-active1/users/vahakosk/CellProfiler/output/DefaultDB.db"
+db = "/input/LMU-active1/users/vahakosk/CellProfiler/output/DefaultDB_h1.db"
 
 # http://stackoverflow.com/questions/14180866/sum-each-value-in-a-list-of-tuples
 def sums(rows):
@@ -82,16 +83,20 @@ if __name__ == '__main__':
 
     # the tables
     image = Base.classes.MyExpt_Per_Image
-    nuclei = Base.classes.MyExpt_Per_Object
+    nuclei = Base.classes.MyExpt_Per_Nuclei
+    nucleiGfpPos = Base.classes.MyExpt_Per_GFPpositive
+    nucleiGfpNeg = Base.classes.MyExpt_Per_GFPnegative
 
     # columns for plate and well metadata
     plate = image.Image_Metadata_Plate
     well = image.Image_Metadata_Well
 
     # data columns of interest
-    columnsNuclei = [nuclei.Nuclei_Classify_neg,\
-                    nuclei.Nuclei_Classify_pos,\
-                    nuclei.Nuclei_Intensity_MeanIntensity_GFP,\]
+    columnsNuclei = [nuclei.Nuclei_Classify_pos,\
+                    nuclei.Nuclei_Classify_neg,\
+                    nuclei.Nuclei_Intensity_MeanIntensity_GFP,\
+                    nuclei.Nuclei_Children_SpotsLanaBright_Count,\
+                    nuclei.Nuclei_Children_SpotsLanaDim_Count]
 
     # find unique plate names
     plates = session.query(distinct(plate)).all()
@@ -117,34 +122,9 @@ if __name__ == '__main__':
             s = sums(results)
             m = means(results)
             #print w, s, m
-            wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (average of all cells in well)",m[0])
-            wellplate.addWellMeasurement(w, str(columnsNuclei[1]) + " (sum of all cells in well)",s[1])
-            wellplate.addWellMeasurement(w, "Count_of_All_Nuclei_Per_Well",len(results))
-
-##            # test average
-##            queryAvg = session.query(func.avg(columnsNuclei[0].label('average')))\
-##                       .join(image,nuclei.ImageNumber==image.ImageNumber) \
-##                       .filter(plate==p,well==w) \
-##                       .all()
-##            
-##            wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (average of all cells in well TEST)",str(queryAvg[0]))
-
-
-            # get measurements for nuclei that are not too bright  
-            # http://stackoverflow.com/questions/2002024/how-to-use-mathematic-equations-as-filters-in-sqlalchemy
-            # clause = "intensity < mean + std"
-            clause = nuclei.NucleiExpanded_Intensity_MeanIntensity_Green < \
-                     image.Mean_NucleiExpanded_Intensity_MeanIntensity_Green + \
-                     image.StDev_NucleiExpanded_Intensity_StdIntensity_Green
-            queryNuclei = queryNuclei.filter(clause)
-            
-            results = queryNuclei.all()
-            s = sums(results)
-            m = means(results)
-            #print w, s, m
-            wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (average of not too bright cells in well)",m[0])
-            wellplate.addWellMeasurement(w, str(columnsNuclei[1]) + " (sum of not too bright cells in well)",s[1])
-            wellplate.addWellMeasurement(w, "Count_of_Not_Too_Bright_Nuclei_Per_Well",len(results))
+            wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (number_of_GFP_pos)",s[0])
+            wellplate.addWellMeasurement(w, str(columnsNuclei[1]) + " (number_of_GFP_neg)",s[1])
+            wellplate.addWellMeasurement(w, "number_of_nuclei",len(results))
 
         wellplate.printout()
         #sys.exit()
