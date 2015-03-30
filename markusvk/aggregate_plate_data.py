@@ -4,7 +4,7 @@ import os
 from pprint import pprint
 import sys
 from sqlalchemy import (create_engine, distinct, MetaData, Table, Column, Integer,
-    String, DateTime, Float, ForeignKey, and_)
+    String, DateTime, Float, ForeignKey, and_, or_)
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from sqlalchemy.ext.automap import automap_base
@@ -129,6 +129,26 @@ if __name__ == '__main__':
             wellplate.addWellMeasurement(w, "number_of_nuclei",len(results))
 
 
+            # query Lana positive nuclei
+            queryNuclei = session.query(*columnsNuclei).join(image,nuclei.ImageNumber==image.ImageNumber) \
+                          .filter(plate==p,well==w)\
+                          .filter(or_(columnsNuclei[3]>0,columnsNuclei[4]>0))
+            results = queryNuclei.all()
+            
+            # if no results, there are no positive cells
+            nPos = len(results)
+            if nPos == 0:
+                m = [0,]
+            else:
+                m = means(results)
+            
+            wellplate.addWellMeasurement(w, "number_of_Lana_positive",nPos)
+            wellplate.addWellMeasurement(w, str(columnsNuclei[3]),m[3])
+            wellplate.addWellMeasurement(w, str(columnsNuclei[4]),m[4])
+
+ 
+
+
             # query GFP positive nuclei
             queryNuclei = session.query(*columnsNucleiGfp).join(image,nucleiGfpPos.ImageNumber==image.ImageNumber) \
                           .filter(plate==p,well==w)
@@ -142,6 +162,7 @@ if __name__ == '__main__':
             
             wellplate.addWellMeasurement(w, str(columnsNucleiGfp[0]) + " (average MTA intensity per cell)",m[0])
 
+ 
         wellplate.printout()
         #sys.exit()
                                           
