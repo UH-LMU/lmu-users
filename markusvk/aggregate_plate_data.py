@@ -11,6 +11,9 @@ from sqlalchemy.ext.automap import automap_base
 
 db = "/input/LMU-active1/users/vahakosk/CellProfiler/output/DefaultDB.db"
 db = "/input/LMU-active1/users/vahakosk/CellProfiler/output/DefaultDB_h1.db"
+db = "/input/LMU-active1/users/vahakosk/CellProfiler/output_harri_20150330/DefaultDB_H2.db"
+db = "/input/LMU-active1/users/vahakosk/CellProfiler/output_20150401/DefaultDB_H2.db"
+
 
 # http://stackoverflow.com/questions/14180866/sum-each-value-in-a-list-of-tuples
 def sums(rows):
@@ -96,7 +99,8 @@ if __name__ == '__main__':
                     nuclei.Nuclei_Classify_neg,\
                     nuclei.Nuclei_Intensity_MeanIntensity_GFP,\
                     nuclei.Nuclei_Children_SpotsLanaBright_Count,\
-                    nuclei.Nuclei_Children_SpotsLanaDim_Count]
+                    nuclei.Nuclei_Children_SpotsLanaDim_Count,\
+                    nuclei.Nuclei_Intensity_MeanIntensity_Lana]
 
     columnsNucleiGfp = [nucleiGfpPos.GFPpositive_Intensity_MeanIntensity_MTA,]
 
@@ -127,6 +131,7 @@ if __name__ == '__main__':
             wellplate.addWellMeasurement(w, str(columnsNuclei[0]) + " (number_of_GFP_pos)",s[0])
             wellplate.addWellMeasurement(w, str(columnsNuclei[1]) + " (number_of_GFP_neg)",s[1])
             wellplate.addWellMeasurement(w, "number_of_nuclei",len(results))
+            wellplate.addWellMeasurement(w, str(columnsNuclei[5]) + " (mean of mean Lana intensity)",m[5])
 
 
             # query Lana positive nuclei
