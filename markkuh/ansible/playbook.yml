@@ -5,3 +5,14 @@
   tasks:
   - name: install sqlalchemy
     apt: name=python-sqlalchemy state=present
+
+  - name: add sqlitebrowser repo
+    apt_repository:
+      repo: 'ppa:linuxgndu/sqlitebrowser'
+      state: present
+
+  - name: Update repositories cache and install "sqlitebrowser" package
+    apt:
+      name: sqlitebrowser
+      update_cache: yes
+      state: present
