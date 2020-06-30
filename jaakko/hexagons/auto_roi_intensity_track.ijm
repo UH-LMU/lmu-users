@@ -22,6 +22,11 @@
 // For questions contact Lance Davidson (lad43@pitt.edu)
 // (Jan 24, 2020)
 
+// HJ: changes made by Harri Jäälinoja for Jaakko Lehtimäki.
+
+// HJ: save results for next processing step in Python
+var OUTPUT_DIR = '/mnt/med-groups-lmu/ls1/users/j/jilehtim/HARRI/PYTHON_INPUT';
+
 var cellx = newArray(9000);
 var celly = newArray(9000);
 var ncells;
@@ -213,6 +218,7 @@ function AllHexStackAveIntensity()
 	stackintens = 0;
 	for (n=1; n<=nSlices; n++) 
 	{	
+		//print("AllHexStackAveIntensity n: ", n);
 		setSlice(n);
 		run("Measure");
 		hexslice = getResult("Mean");
@@ -255,6 +261,7 @@ macro "DrillwithinROIforAster"
 	run("Set Measurements...", "  mean slice redirect=None decimal=6");
 	
 	stackintens = AllHexStackAveIntensity();
+	print("stackintens: ", stackintens);
 	
 //
 //
@@ -262,9 +269,19 @@ macro "DrillwithinROIforAster"
 	selectWindow(rawstack);
 	getDimensions(rwidth, rheight, rchannels, rslices, rframes);
 
-	newImage("Actin Contraction Stack", "8-bit black", rwidth, rheight, rslices);
+// HJ: print image dimensions
+	print("nSlices: ", nSlices);
+	print("rwidth: ", rwidth);
+	print("rheight: ", rheight);
+	print("rchannels: ", rchannels);
+	print("rslices: ", rslices);
+	print("rframes: ", rframes);
+// HJ: adjust new image dimensions
+//	newImage("Actin Contraction Stack", "8-bit black", rwidth, rheight, rslices);
+	newImage("Actin Contraction Stack", "8-bit black", rwidth, rheight, 1, rslices, rframes);
 	actstack = getTitle();
-	
+
+
 	selectWindow(rawstack);
 //
 //
@@ -276,16 +293,20 @@ macro "DrillwithinROIforAster"
 	{
 		bigstring = toString(i) + fromCharCode(9);
 		roiManager("Select",i);
-		for (n=1; n<=nSlices; n++) 
+		// HJ: loop over frames instead of slices
+		//for (n=1; n<=nSlices; n++) 
+		for (n=1; n<=rframes; n++) 
 		{	
 			selectWindow(rawstack);
 
 			
 			roiManager("Select",i);
+			//print("DrillwithinROIforAster n: ", n);
 			setSlice(n);
 			
 			run("Measure");
 			hexintens = getResult("Mean");
+			print("hexintens: ", hexintens);
 			
 			if ( hexintens > stackintens*actinthresh)
 			{	
@@ -308,14 +329,64 @@ macro "DrillwithinROIforAster"
 			 }
 
 			bigstring = bigstring + toString(hexintens) + fromCharCode(9);
+
+
 		}
 				
+
 		
 		print (bigstring);
 		bigstring = "";
 	}
 
+	// HJ: convert time series to volume
+	selectWindow(actstack);
+	run("Stack to Hyperstack...", "order=xyczt(default) channels=1 slices=181 frames=1 display=Grayscale");
+
+
+	// HJ: create new image where hexagons are disconnected into 'tubes'
+	newImage("Time Tube Stack", "8-bit black", rwidth, rheight, 1, rslices, rframes);
+	timetubes = getTitle();
+	selectWindow(timetubes);
+
+	for (i=2;i<nrois; i++)
+	{
+		bigstring = toString(i) + fromCharCode(9);
+		roiManager("Select",i);
+		//for (n=1; n<=nSlices; n++) 
+		for (n=1; n<=rframes; n++) 
+		{	
+			roiManager("Select",i);
+			setSlice(n);
+			// HJ: scale down ROIs to separate adjacent hexagons...
+			// ... but later Jaakko found out it's better not to separate them,
+			// so the scaling down is commented out.
+			//run("Scale... ", "x=0.75 y=0.75 centered");
+			setColor(255);
+			fill();
+		}
+	}
+
+	// HJ: convert time series to volume
+	selectWindow(timetubes);
+	run("Stack to Hyperstack...", "order=xyczt(default) channels=1 slices=181 frames=1 display=Grayscale");
+
+	// HJ: combine (logical AND) stacks
+	imageCalculator("AND create stack", "Actin Contraction Stack","Time Tube Stack");
+	timeactins = getTitle();
+	selectWindow("Result of Actin Contraction Stack");
+
+	// HJ: save stack as OME tiff
+	basename = replace(rawstack,".tif","");
+	output = OUTPUT_DIR + "/" + basename + "_timetubes.ome.tif";
+	print(output);
+	run("OME-TIFF...", "save=" + output + " compression=Uncompressed");
+
+	//run("3D OC Options", "bounding_box dots_size=5 font_size=10 show_numbers white_numbers store_results_within_a_table_named_after_the_image_(macro_friendly) redirect_to=none");
+	//run("3D Objects Counter", "threshold=1 slice=90 min.=1 max.=189792256 exclude_objects_on_edges objects statistics summary");
+
 	setBatchMode("exit and display");
+	print("Done.");
 }
 //
 // 	For an interesting representation of this analysis displayed on your original
