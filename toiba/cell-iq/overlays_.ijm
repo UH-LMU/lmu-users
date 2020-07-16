@@ -21,13 +21,13 @@ function create_overlay(input_orig, filename, output_seg, output_xy, output_over
 }
 
 setBatchMode(true);
-var pdone = false;
-var wdone = false;
 
-plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR';
+//plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/';
+plate = getDirectory("Select plate directory, e.g. Plate1");
 output_plate = plate + "/output";
 print(output_plate);
 
+pdone = false;
 wells = getFileList(plate);
 for (w=0; w<wells.length && !pdone; w++){
 	if (startsWith(wells[w],'Well')) {
@@ -40,17 +40,21 @@ for (w=0; w<wells.length && !pdone; w++){
 		print(output_overlay);
 		File.makeDirectory(output_overlay);
 
+		wdone = false;
 		list = getFileList(input_well);
-		var done = false;
 		for (i=0; i<list.length && !wdone; i++){
 			if (endsWith(list[i],'.tif')) {
 				//print(list[i]);
 				create_overlay(input_well, list[i], output_seg, output_xy, output_overlay);
 			}
-			// uncomment to test with fewer images
-			//if(i==5) wdone = true;
+			if(i==2) {
+				print("finished test images " + i);
+				wdone = true;
+			}
 		}
 	}
-	// uncomment to test with fewer wells
-	//if(w==5) pdone = true;
+	if(w==10) {
+		print("finished test wells " + w);
+		pdone = true;
+	}
 }

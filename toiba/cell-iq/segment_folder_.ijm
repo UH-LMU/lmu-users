@@ -15,19 +15,22 @@ function segment(input_dir, filename, output_dir) {
 }
 
 setBatchMode(true);
-var pdone = false;
-var wdone = false;
 
-plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR';
-output_plate = plate + "/output";
+//plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/';
+plate = getDirectory("Select plate directory, e.g. Plate1");
+
+output_plate = plate + "output";
 print(output_plate);
 File.makeDirectory(output_plate);
 
+pdone = false;
 wells = getFileList(plate);
 for (w=0; w<wells.length && !pdone; w++){
+	//print(wells[w]);
 	if (startsWith(wells[w],'Well')) {
 		well = wells[w];
-		input_well = plate + "/" + well;
+		input_well = plate + well;
+		print(input_well);
 		output_well = output_plate + "/" + well;
 		output_seg= output_plate + "/" + well + "segmentation";
 		print(output_well);
@@ -35,19 +38,23 @@ for (w=0; w<wells.length && !pdone; w++){
 		File.makeDirectory(output_well);
 		File.makeDirectory(output_seg);
 
-		list = getFileList(well);
-		var done = false;
+		wdone = false;
+		list = getFileList(input_well);
 		for (i=0; i<list.length && !wdone; i++){
 			if (endsWith(list[i],'.tif')) {
-				//print(list[i]);
+				print(list[i]);
 				segment(input_well, list[i], output_seg);
 			}
-			// uncomment to test with fewer images
-			//if(i==5) wdone = true;
+			if(i==2) {
+				print("finished test images " + i);
+				wdone = true;
+			}
 		}
 	}
-	// uncomment to test with fewer wells
-	//if(w==2) pdone = true;
+	if(w==10) {
+		print("finished test wells " + w);
+		pdone = true;
+	}
 }
 
 

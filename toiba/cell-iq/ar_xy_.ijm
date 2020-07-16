@@ -61,11 +61,17 @@ function ar_xy(input_dir, filename, output_ar, output_xy) {
 setBatchMode(true);
 var pdone = false;
 var wdone = false;
+// set to true to test with fewer images and wells
+var DEBUG = true;
+var TEST_IMAGES = 3;
+var TEST_WELLS = 8;
 
-plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/output';
+//plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/output';
+plate = getDirectory("Select plate output directory, e.g. Plate1/output");
 output_plate = plate;
 print(output_plate);
 
+pdone = false;
 wells = getFileList(plate);
 for (w=0; w<wells.length && !pdone; w++){
 	if (startsWith(wells[w],'Well')) {
@@ -85,10 +91,14 @@ for (w=0; w<wells.length && !pdone; w++){
 				//print(list[i]);
 				ar_xy(output_seg, list[i], output_ar, output_xy);
 			}
-			// uncomment to test with fewer images
-			//if(i==5) wdone = true;
+			if(i==2) {
+				print("finished test images " + i);
+				wdone = true;
+			}
 		}
 	}
-	// uncomment to test with fewer wells
-	//if(w==5) pdone = true;
+	if(w==10) {
+		print("finished test wells " + w);
+		pdone = true;
+	}
 }
