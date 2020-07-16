@@ -48,13 +48,15 @@ for (w=0; w<wells.length && !pdone; w++){
 				create_overlay(input_well, list[i], output_seg, output_xy, output_overlay);
 			}
 			if(i==2) {
-				print("finished test images " + i);
-				wdone = true;
+				// uncomment for testing with fewer images
+				//print("finished test images " + i);
+				//wdone = true;
 			}
 		}
 	}
 	if(w==10) {
-		print("finished test wells " + w);
-		pdone = true;
+		// uncomment for testing with fewer wells
+		//print("finished test wells " + w);
+		//pdone = true;
 	}
 }

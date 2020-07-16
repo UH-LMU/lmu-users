@@ -1,4 +1,6 @@
 
+var MIN_AREA = "300";
+
 function ar_xy(input_dir, filename, output_ar, output_xy) {
 	AR = "AR";
 	XY = "XY";
@@ -12,7 +14,7 @@ function ar_xy(input_dir, filename, output_ar, output_xy) {
 	Stack.setXUnit("px");
 	run("Properties...", "channels=1 slices=1 frames=1 pixel_width=1 pixel_height=1 voxel_depth=1.0000");
 	run("Set Measurements...", "area centroid center fit shape redirect=None decimal=3");
-	run("Analyze Particles...", "display exclude clear add");
+	run("Analyze Particles...", "size=" + MIN_AREA + "-Infinity pixel display exclude clear add");
 	//print(nResults);
 
 	// arrays for cell center coordinates
@@ -59,12 +61,6 @@ function ar_xy(input_dir, filename, output_ar, output_xy) {
 
 
 setBatchMode(true);
-var pdone = false;
-var wdone = false;
-// set to true to test with fewer images and wells
-var DEBUG = true;
-var TEST_IMAGES = 3;
-var TEST_WELLS = 8;
 
 //plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/output';
 plate = getDirectory("Select plate output directory, e.g. Plate1/output");
@@ -84,21 +80,23 @@ for (w=0; w<wells.length && !pdone; w++){
 		File.makeDirectory(output_ar);
 		File.makeDirectory(output_xy);
 
+		wdone = false;
 		list = getFileList(output_seg);
-		var done = false;
 		for (i=0; i<list.length && !wdone; i++){
 			if (endsWith(list[i],'.tif')) {
 				//print(list[i]);
 				ar_xy(output_seg, list[i], output_ar, output_xy);
 			}
-			if(i==2) {
-				print("finished test images " + i);
-				wdone = true;
+			if(i==0) {
+				// uncomment for testing with fewer images
+				//print("finished test images " + i);
+				//wdone = true;
 			}
 		}
 	}
 	if(w==10) {
-		print("finished test wells " + w);
-		pdone = true;
+		// uncomment for testing with fewer wells
+		//print("finished test wells " + w);
+		//pdone = true;
 	}
 }
