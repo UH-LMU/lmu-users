@@ -19,7 +19,8 @@ setBatchMode(true);
 //plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/';
 plate = getDirectory("Select plate directory, e.g. Plate1");
 
-output_plate = plate + "output";
+//output_plate = plate + "output";
+output_plate = getDirectory("Select output directory");
 print(output_plate);
 File.makeDirectory(output_plate);
 
