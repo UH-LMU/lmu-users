@@ -1,4 +1,4 @@
-var FIRST_FRAME = "100";
+var FIRST_FRAME = "1";
 
 function create_overlay_video(input_dir, tif, ntif, output_video) {
 	run("Image Sequence...", "open=[" + input_dir + "/" + tif +"] starting=" + FIRST_FRAME + " file=.tif sort use");
@@ -22,54 +22,65 @@ function create_ar_video(input_dir, tif, ntif, output_video) {
 	run("Close All");
 }
 
-setBatchMode(true);
+function process_well(output_well) {
+	output_ar = output_well + "ar";
+	output_overlay = output_well + "overlay";
+	output_video = output_well + "video";
+	print(output_video);
+	File.makeDirectory(output_video);
 
-//plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/output';
-plate = getDirectory("Select plate output directory, e.g. Plate1/output");
-output_plate = plate;
-print(output_plate);
-
-pdone = false;
-wells = getFileList(plate);
-for (w=0; w<wells.length && !pdone; w++){
-	if (startsWith(wells[w],'Well')) {
-		well = wells[w];
-		output_ar = output_plate + "/" + well + "ar";
-		output_overlay = output_plate + "/" + well + "overlay";
-		output_video = output_plate + "/" + well + "video";
-		print(output_video);
-		File.makeDirectory(output_video);
-
-		// overlay video
-		list = getFileList(output_overlay);
-		tif = "";
-		ntif = 0;
-		for (i=0; i<list.length; i++){
-			if (endsWith(list[i],'.tif')) {
-				tif = list[i];
-				ntif = ntif + 1;
-			}
+	// overlay video
+	list = getFileList(output_overlay);
+	tif = "";
+	ntif = 0;
+	for (i=0; i<list.length; i++){
+		if (endsWith(list[i],'.tif')) {
+			tif = list[i];
+			ntif = ntif + 1;
 		}
-		create_overlay_video(output_overlay, tif, ntif, output_video);
-
-		// ar video
-		list = getFileList(output_ar);
-		tif = "";
-		ntif = 0;
-		for (i=0; i<list.length; i++){
-			if (endsWith(list[i],'.tif')) {
-				tif = list[i];
-				ntif = ntif + 1;
-			}
-		}
-		create_ar_video(output_ar, tif, ntif, output_video);
-
-
-
 	}
-	if(w==10) {
-		// uncomment for testing with fewer wells
-		//print("finished test wells " + w);
-		//pdone = true;
+	create_overlay_video(output_overlay, tif, ntif, output_video);
+
+	// ar video
+	list = getFileList(output_ar);
+	tif = "";
+	ntif = 0;
+	for (i=0; i<list.length; i++){
+		if (endsWith(list[i],'.tif')) {
+			tif = list[i];
+			ntif = ntif + 1;
+		}
+	}
+	create_ar_video(output_ar, tif, ntif, output_video);
+}
+
+function process_plate(output_plate) {
+	print(output_plate);
+
+	pdone = false;
+	wells = getFileList(output_plate);
+	for (w=0; w<wells.length && !pdone; w++){
+		if (startsWith(wells[w],'Well')) {
+			well = wells[w];
+			output_well = output_plate + "/" + well;
+			process_well(output_well);
+		}
+		if(w==10) {
+			// uncomment for testing with fewer wells
+			//print("finished test wells " + w);
+			//pdone = true;
+		}
 	}
 }
+
+setBatchMode(true);
+
+//output = getDirectory("Select plate output directory, e.g. Plate1/output");
+
+output = '/work/data/mushtaq/test_well_output/';
+process_well(output);
+
+//output = '/work/data/mushtaq/test_plate_output/';
+//process_plate(output);
+
+
