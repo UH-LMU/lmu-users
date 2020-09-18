@@ -59,44 +59,57 @@ function ar_xy(input_dir, filename, output_ar, output_xy) {
 	run("Close All");
 }
 
+function process_well(output_well) {
+	output_seg = output_well + "/segmentation";
+	output_ar = output_well + "/ar";
+	output_xy = output_well + "/xy";
+	//output_ar = replace(output_seg, "segmentation", "ar");
+	//output_xy = replace(output_seg, "segmentation", "xy");
+	print(output_ar);
+	print(output_xy);
+	File.makeDirectory(output_ar);
+	File.makeDirectory(output_xy);
+
+	wdone = false;
+	list = getFileList(output_seg);
+	for (i=0; i<list.length && !wdone; i++){
+		if (endsWith(list[i],'.tif')) {
+			//print(list[i]);
+			ar_xy(output_seg, list[i], output_ar, output_xy);
+		}
+		if(i==0) {
+			// uncomment for testing with fewer images
+			//print("finished test images " + i);
+			//wdone = true;
+		}
+	}
+}
+
+function process_plate(output_plate) {
+	pdone = false;
+	wells = getFileList(output_plate);
+	for (w=0; w<wells.length && !pdone; w++){
+		if (startsWith(wells[w],'Well')) {
+			well = wells[w];
+			output_well = output_plate + "/" + well;
+			process_well(output_well);
+		}
+		if(w==10) {
+			// uncomment for testing with fewer wells
+			//print("finished test wells " + w);
+			//pdone = true;
+		}
+	}
+}
 
 setBatchMode(true);
 
-//plate = '/work/data/mushtaq/cellIQ 30.06.2020 20ulseeding a2WT a3TRI b2Afa b3Magi c2Occ c3LSR/output';
-plate = getDirectory("Select plate output directory, e.g. Plate1/output");
-output_plate = plate;
-print(output_plate);
+//output = getDirectory("Select plate output directory, e.g. Plate1/output");
 
-pdone = false;
-wells = getFileList(plate);
-for (w=0; w<wells.length && !pdone; w++){
-	if (startsWith(wells[w],'Well')) {
-		well = wells[w];
-		output_seg= output_plate + "/" + well + "segmentation";
-		output_ar= output_plate + "/" + well + "ar";
-		output_xy= output_plate + "/" + well + "xy";
-		print(output_ar);
-		print(output_xy);
-		File.makeDirectory(output_ar);
-		File.makeDirectory(output_xy);
+output = '/work/data/mushtaq/test_well_output';
+process_well(output);
 
-		wdone = false;
-		list = getFileList(output_seg);
-		for (i=0; i<list.length && !wdone; i++){
-			if (endsWith(list[i],'.tif')) {
-				//print(list[i]);
-				ar_xy(output_seg, list[i], output_ar, output_xy);
-			}
-			if(i==0) {
-				// uncomment for testing with fewer images
-				//print("finished test images " + i);
-				//wdone = true;
-			}
-		}
-	}
-	if(w==10) {
-		// uncomment for testing with fewer wells
-		//print("finished test wells " + w);
-		//pdone = true;
-	}
-}
+//output = '/work/data/mushtaq/test_plate_output';
+//process_plate(output);
+
+
