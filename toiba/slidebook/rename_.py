@@ -183,6 +183,8 @@ def main():
         renamed = os.path.join(parent, base) + ext
         print renamed
 
+        os.rename(ip, renamed)
+
 print __name__
 
 if __name__ in ("__main__", "__builtin__"):
