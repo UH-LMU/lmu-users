@@ -65,6 +65,8 @@ class SamuLifProcessor:
     def __init__(self,outputDir):
         self.outputDir = outputDir
 
+    # Thanks to:
+    # https://wiki.cmci.info/documents/120206pyip_cooking/python_imagej_cookbook#channel_splitter
         
     def maxZprojection(self, stackimp):
 	zp = ZProjector(stackimp)
