@@ -2,6 +2,7 @@ from ij import IJ,ImagePlus
 from ij.plugin import ImageCalculator
 from ij.plugin.filter import Analyzer
 from loci.plugins.in import ImagePlusReader,ImporterOptions,ImportProcess
+from trainableSegmentation import WekaSegmentation
 import os.path
 import re
 import sys
@@ -57,6 +58,33 @@ def measureImage(imp):
     masked.close()
     
 
+def save_tl_edf(imp, filename_tl):
+    imp.setTitle("tmp")
+    imp.show()
+
+    IJ.run(imp, "Split Channels", "")
+
+    # 1 is the fluorescence channel,
+    # 2 is the transmitted light channel
+
+    # close channel 1 image
+    #IJ.selectWindow("C1-tmp")
+    #c1 = IJ.getImage()
+    #c1.close()
+
+    IJ.selectWindow("C2-tmp")
+    #c2 = IJ.getImage()
+
+    IJ.run("Stack Focuser ", "enter=11");
+    IJ.selectWindow("Focused_C2-tmp")
+    f2 = IJ.getImage()
+    IJ.saveAsTiff(f2, filename_tl)
+
+    #c2.close()
+    #f2.close()
+
+
+    
 def measureBF(filepath):
     """
     List all series in a LIF file.
@@ -85,6 +113,7 @@ def measureBF(filepath):
     filename,ext = os.path.splitext(basename)
     filename_out = os.path.join(dirname, filename + '_s%d.csv' % (MAG))
     filename_selmag = os.path.join(dirname, filename + '_s%d.tif' % (MAG))
+    filename_tl = os.path.join(dirname, filename + '_s%d_tl.tif' % (MAG))
     
     # reader external to the import process
     impReader = ImagePlusReader(process)
@@ -111,16 +140,17 @@ def measureBF(filepath):
     rt.reset()
 
     ## The actual processing happens here
-    measureImage(imp)
-
+    #measureImage(imp)
+    save_tl_edf(imp, filename_tl)
+    
     # save results table
     rt.save(filename_out)
 
     #imp.close()
-    
+    IJ.run("Close All")
         
 
-inputdir = '/home/hajaalin/data/elham/'
+inputdir = '/home/user/data/elham/'
 # On Windows you have to use \\ instead of /, so something like
 # inputdir = 'L:\\lmu_active1\users\h ...'
 
