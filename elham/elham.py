@@ -58,7 +58,7 @@ def measureImage(imp):
     masked.close()
     
 
-def save_tl_edf(imp, filename_tl):
+def save_projs(imp, filename_fl, filename_tl):
     imp.setTitle("tmp")
     imp.show()
 
@@ -67,21 +67,19 @@ def save_tl_edf(imp, filename_tl):
     # 1 is the fluorescence channel,
     # 2 is the transmitted light channel
 
-    # close channel 1 image
-    #IJ.selectWindow("C1-tmp")
-    #c1 = IJ.getImage()
-    #c1.close()
+    # maximum intensity projection of fluorescence channel
+    IJ.selectWindow("C1-tmp")
+    IJ.run("Z Project...", "projection=[Max Intensity]");
+    IJ.selectWindow("MAX_C1-tmp")
+    c1 = IJ.getImage()
+    IJ.saveAsTiff(c1, filename_fl)
 
+    # best focus projection of transmitted light channel
     IJ.selectWindow("C2-tmp")
-    #c2 = IJ.getImage()
-
     IJ.run("Stack Focuser ", "enter=11");
     IJ.selectWindow("Focused_C2-tmp")
-    f2 = IJ.getImage()
-    IJ.saveAsTiff(f2, filename_tl)
-
-    #c2.close()
-    #f2.close()
+    c2 = IJ.getImage()
+    IJ.saveAsTiff(c2, filename_tl)
 
 
     
@@ -108,12 +106,27 @@ def measureBF(filepath):
     MAG = 3
 
     # define where to save metadata file
-    dirname = os.path.dirname(filepath)
+    dirname = os.path.join(os.path.dirname(filepath), "output_mag%d" % MAG)
+    dirname_fl = os.path.join(dirname, "fl")
+    dirname_tl = os.path.join(dirname, "tl")
+    try:
+        os.makedirs(dirname)
+    except:
+        pass
+    try:
+        os.makedirs(dirname_fl)
+    except:
+        pass
+    try:
+        os.makedirs(dirname_tl)
+    except:
+        pass
     basename = os.path.basename(filepath)
     filename,ext = os.path.splitext(basename)
     filename_out = os.path.join(dirname, filename + '_s%d.csv' % (MAG))
     filename_selmag = os.path.join(dirname, filename + '_s%d.tif' % (MAG))
-    filename_tl = os.path.join(dirname, filename + '_s%d_tl.tif' % (MAG))
+    filename_fl = os.path.join(dirname_fl, filename + '_s%d_fl_max.tif' % (MAG))
+    filename_tl = os.path.join(dirname_tl, filename + '_s%d_tl.tif' % (MAG))
     
     # reader external to the import process
     impReader = ImagePlusReader(process)
@@ -132,7 +145,7 @@ def measureBF(filepath):
     print("nimages: " + str(len(imps)))
 
     imp = imps[0]
-    #IJ.saveAsTiff(imp, filename_selmag)
+    IJ.saveAsTiff(imp, filename_selmag)
 
     
     # clear results table
@@ -141,14 +154,13 @@ def measureBF(filepath):
 
     ## The actual processing happens here
     #measureImage(imp)
-    save_tl_edf(imp, filename_tl)
+    save_projs(imp, filename_fl, filename_tl)
     
     # save results table
     rt.save(filename_out)
 
     #imp.close()
     IJ.run("Close All")
-        
 
 inputdir = '/home/user/data/elham/'
 # On Windows you have to use \\ instead of /, so something like
